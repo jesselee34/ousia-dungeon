@@ -1,0 +1,27 @@
+@use 'variables';
+@import url('https://fonts.googleapis.com/css2?family=Eagle+Lake&display=swap');
+
+* {
+  user-select: none;
+}
+
+body {
+  margin: 0;
+  font-family: 'Eagle Lake';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+.game {
+  position: absolute;
+  display: block;
+  overflow: hidden;
+  width: variables.$screenWidth;
+  height: variables.$screenHeight;
+
+  top: calc(50% - calc(variables.$screenHeight/2));
+  left: calc(50% - calc(variables.$screenWidth/2));
+
+  background: #282c34;
+  box-shadow: 0 0 20px black;
+}

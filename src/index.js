@@ -1,8 +1,27 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
-import './index.css';
-import App from './App';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+
 import reportWebVitals from './reportWebVitals';
+import Menu from './pages/menu';
+import Battle from './pages/battle';
+import context from './context';
+import './index.scss';
+
+function App() {
+  return (
+    <div className="game">
+      <context.Provider value={{}}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<Menu />} />
+            <Route path="/battle" element={<Battle />} />
+          </Routes>
+        </BrowserRouter>
+      </context.Provider>
+    </div>
+  );
+}
 
 ReactDOM.render(
   <React.StrictMode>

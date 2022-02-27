@@ -1,4 +1,4 @@
-import Cards from 'components/cards';
+import Cards from './cards';
 import styles from './battle.module.scss';
 
 const cards = [

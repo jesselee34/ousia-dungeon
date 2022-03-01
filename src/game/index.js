@@ -1,6 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-
-import context from 'contexts/game';
+import useStore from 'store';
 import 'scss/global.scss';
 
 import { useState } from 'react';
@@ -11,7 +10,7 @@ const initialState = {
   mousePosition: {},
 };
 
-export default function Entry () {
+export default function Game () {
   const [gameState, setGameState] = useState(initialState);
   const ref = useRef();
   
@@ -57,9 +56,7 @@ export default function Entry () {
   
   return (
     <div ref={ref} className="game">
-      <context.Provider value={gameState}>
-        <Router />
-      </context.Provider>
+      <Router />
     </div>
   );
 }

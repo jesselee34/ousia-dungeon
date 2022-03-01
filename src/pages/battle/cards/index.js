@@ -1,6 +1,6 @@
 import { useState, useContext, useMemo, useEffect } from 'react';
 import classnames from 'classnames';
-import context from 'contexts/game';
+import context from 'store';
 import styles from './cards.module.scss';
 
 const a = -0.02;

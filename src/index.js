@@ -2,11 +2,11 @@ import React from 'react';
 import ReactDOM from 'react-dom';
 
 import reportWebVitals from './reportWebVitals';
-import Entry from 'entry';
+import Entry from 'game';
 
 ReactDOM.render(
   <React.StrictMode>
-    <Entry />
+    <Game />
   </React.StrictMode>,
   document.getElementById('root')
 );

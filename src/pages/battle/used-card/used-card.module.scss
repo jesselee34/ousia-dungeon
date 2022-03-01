@@ -1,0 +1,9 @@
+.animation {
+  animation: card-use 1s;
+}
+
+@keyframes animation {
+  100% {
+    transform: rotateZ(1000deg);
+  }
+}

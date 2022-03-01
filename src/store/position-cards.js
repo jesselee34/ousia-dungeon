@@ -1,16 +1,16 @@
-import styles from './cards.module.scss';
-
 const a = -0.02;
 const h = 5;
 const k = 0.5;
 const diff = 0.1;
 const multi = 1.6;
 
-const screenHeight = parseFloat(styles.screenHeight, 10);
-const cardWidth = parseFloat(styles.cardWidth, 10);
-const cardHeight = parseFloat(styles.cardHeight, 10);
-const handWidth = parseFloat(styles.handWidth, 10);
-const handHeight = parseFloat(styles.handHeight, 10);
+const scale = 1;
+const cardSize = 50;
+const cardWidth = 1024 * scale;
+const screenHeight = 768 * scale;
+const handWidth = 2.5 * cardSize * scale;
+const cardHeight = 3.5 * cardSize * scale;
+const handHeight = 5 * cardSize * scale;
 
 function getYPos(xpos){
   const ypos = a * Math.pow((xpos - h), 2) + k;
@@ -92,7 +92,7 @@ function alignCards (cards) {
   });
 
   return result;
-}
+};
 
 function hoverAlignCards (hoverIndex, cards) {
   let newCards = alignCards(cards, cardWidth, handWidth, handHeight);
@@ -123,8 +123,12 @@ function hoverAlignCards (hoverIndex, cards) {
   return newCards;
 }
 
-function positionCards (hand, hoverIndex, selectedCard) {
-  return hand;
+function positionCards (hand, hoverIndex) {
+  if (hoverIndex < 0) {
+    return alignCards(hand);
+  }
+
+  return hoverAlignCards(hoverIndex, newCards);
 }
 
 export default positionCards;

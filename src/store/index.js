@@ -4,13 +4,9 @@ import drawCard from './draw-card';
 import positionCards from './position-cards';
 import removeCard from './remove-card';
 import discard from './discard';
+import calculateSelectedPosition from './calculate-selected-position';
 
 const useStore = create((set) => ({
-  mouse: {
-    x: 0,
-    y: 0,
-  },
-
   screen: {
     x: 0,
     y: 0,
@@ -57,14 +53,14 @@ const useStore = create((set) => ({
   ],
   
   usedCard: null,
-
-  selectedCard: -1,
-  hoveredCard: -1,
+  selectedCard: null,
+  selectedCardIndex: -1,
+  hoveredCardIndex: -1,
 
   // Add a new card to the hand, remove a card from the drawPile
   drawCard: () => set((state) => {
     let [hand, drawPile] = drawCard(state.hand, state.drawPile);
-    hand = positionCards(hand, state.hoverCard, state.selectCard);
+    hand = positionCards(hand, state.hoverCardIndex);
 
     return { hand, drawPile };
   }),
@@ -72,7 +68,7 @@ const useStore = create((set) => ({
   // Remove a card from the hand, set the used card
   useCard: (index) => set((state) => {
     const [hand, removed] = removeCard(state.hand, index);
-    hand = positionCards(hand, state.hoverCard, state.selectCard);
+    hand = positionCards(hand, state.hoverCardIndex);
 
     return { hand, usedCard: removed };
   }),
@@ -86,7 +82,7 @@ const useStore = create((set) => ({
 
   // Set which card is hovered
   hoverCard: (index) => set(() => {
-    const hand = positionCards(hand, state.hoverCard, state.selectCard);
+    const hand = positionCards(hand, state.hoverCardIndex);
     
     return { hand, hoveredCard: index };
   }),
@@ -95,15 +91,21 @@ const useStore = create((set) => ({
   selectCard: (index) => set(() => ({ selectedCard: index })),
 
   // Set the selected card to the mouse position
-  setCardToMouse: () => set((state) => {
-    const 
+  setSelectedCardToMouse: (mouse) => set((state) => {
+    const position = calculateSelectedPosition(
+      state.hand,
+      state.selectedCardIndex,
+      mouse.x,
+      mouse.y,
+      state.screen.x,
+      state.screen.y
+    );
+
+    return { selectedCard: { ...state.selectedCard, ...position } };
   }),
 
-  // Update the mouse position
-  updateMouse: (mouse) => set(() => { mouse }),
-
   // Update the screen position
-  updateScreen: (screen) => set(() => { screen }),
+  setScreen: (screen) => set(() => { screen }),
 }));
 
 export default useStore;

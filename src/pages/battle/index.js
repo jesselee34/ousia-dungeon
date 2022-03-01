@@ -1,7 +1,8 @@
+import { useState } from 'react';
 import Cards from './cards';
 import styles from './battle.module.scss';
 
-const cards = [
+const defaultCards = [
   {
     id: 'one',
   },
@@ -35,9 +36,11 @@ const cards = [
 ];
 
 export default function Battle () {
+  const [cards, setCards] = useState(defaultCards);
+  
   return (
     <div className={styles.content}>
-      <Cards cards={cards} />
+      <Cards cards={cards} setCards={setCards} />
     </div>
   )
 }

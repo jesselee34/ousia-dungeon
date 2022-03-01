@@ -27,3 +27,13 @@ $handHeight: calc(5px * $cardSizeMultiplier);
   border-radius: 0.5em;
   box-shadow: 0px 0px 5px rgba(0, 0, 0, 0.4);
 }
+
+.card.use {
+  animation: card-use 1s;
+}
+
+@keyframes card-ues {
+  100% {
+    transform: rotateZ(1000deg);
+  }
+}

@@ -1,4 +1,6 @@
-import { useState } from 'react';
+import { useState, useContext, useMemo, useEffect } from 'react';
+import classnames from 'classnames';
+import context from 'contexts/game';
 import styles from './cards.module.scss';
 
 const a = -0.02;
@@ -58,7 +60,7 @@ function getRotation (xpos) {
   }
 }
 
-function alignCards (cards = []) {
+function alignCards (cards) {
   let count = cards.length;
 
   const result = cards.map((card, i) => {
@@ -87,6 +89,7 @@ function alignCards (cards = []) {
     card.scale = 1;
     card.transition = 'transform 0.5s';
     card.zIndex = i;
+    card.classes = [];
   
     return card;
   });
@@ -94,26 +97,26 @@ function alignCards (cards = []) {
   return result;
 }
 
-function hoverAlignCards (state, cards) {
+function hoverAlignCards (hoverIndex, cards) {
   let newCards = alignCards(cards, cardWidth, handWidth, handHeight);
   const hoverScale = 1.4;
   const offsetLeft = ((cardWidth * hoverScale) - (cardWidth * hoverScale)/1.5);
   
   newCards = newCards.map((card, i) => {
     // Shift every card to the left of the hovered card more to the left
-    if (i < state.hoverIndex) {
-      card.left -= (offsetLeft / (state.hoverIndex - i));
+    if (i < hoverIndex) {
+      card.left -= (offsetLeft / (hoverIndex - i));
     }
     // Shift every card to the rightof the hovered card more to the right
-    else if (i > state.hoverIndex) {
-      card.left += (offsetLeft / (i - state.hoverIndex));
+    else if (i > hoverIndex) {
+      card.left += (offsetLeft / (i - hoverIndex));
     }
     // Set the rotation, size, and Y offset for the hovered card
     else {
       card.top = screenHeight - cardHeight * (hoverScale/1.17);
       card.scale = hoverScale;
       card.rotation = 0;
-      card.zIndex = cards.length;
+      card.zIndex = newCards.length;
       card.transition = 'none';
     }
     
@@ -123,100 +126,149 @@ function hoverAlignCards (state, cards) {
   return newCards;
 }
 
+function calculateSelectedPosition (cards, selectedIndex, mouseX, mouseY, screenX, screenY) {
+  const result = cards.map((card, i) => {
+    if (i === selectedIndex) {
+      card.left = mouseX - screenX - cardWidth / 2;
+      card.top = mouseY - screenY - cardHeight / 2;
+    }
+    
+    return card;
+  });
+
+  return result;
+}
+
 function handleClick (e, i, state, setState) {
   if (state.selectedIndex === i) {
-    setState({
-      ...state,
-      selectedIndex: -1,
-      hoverIndex: -1,
-    });
-    
     // Left Click
     if (e.nativeEvent.which === 1) {
-      
+      setState({
+        selectedIndex: -1,
+        hoverIndex: -1,
+        use: i,
+      });
     }
     // Right Click
     else if (e.nativeEvent.which === 3) {
-
+      setState({
+        selectedIndex: -1,
+        hoverIndex: -1,
+        use: -1,
+      });
     }
   } else {
     setState({
       ...state,
       selectedIndex: i,
-      mousePosition: {
-        x: e.clientX,
-        y: e.clientY,
-      }
+      use: -1,
     });
   }
 }
 
-export default function Cards ({ cards = [] }) {
+export default function Cards ({ cards, setCards }) {
+  const { screen, mousePosition } = useContext(context);
+  
   const [state, setState] = useState({
     hoverIndex: -1,
     selectedIndex: -1,
-    mousePosition: {},
+    use: -1,
   });
+  
+  // Store the used card is there is one
+  let usedCard = null;
 
-  let mouseMove;
-  let newCards;
+  let newCards = useMemo(() => {
+    const result = [];
+    
+    cards.forEach((card, i) => {
+      if (state.use === i) {
+        usedCard = card
+      } else {
+        result.push(card);
+      }
+    });
 
-  if (state.hoverIndex < 0) {
-    newCards = alignCards(cards);
-  } else {
-    newCards = hoverAlignCards(state, cards);
-  }
+    return result;
+  }, [cards]);
 
+  // Only calculate card positions if hoverIndex or cards change
+  newCards = useMemo(() => {
+    if (state.hoverIndex < 0) {
+      return alignCards(newCards);
+    }
+
+    return hoverAlignCards(state.hoverIndex, newCards);
+  }, [state.hoverIndex, newCards]);
+
+  // Only calculate the selected card position if mousePosition has changed
+  newCards = useMemo(() => (
+    calculateSelectedPosition(
+      newCards,
+      state.selectedIndex,
+      mousePosition.x,
+      mousePosition.y,
+      screen.x,
+      screen.y,
+      state.use
+    )
+  ), [
+    newCards,
+    state.selectedIndex,
+    mousePosition.x,
+    mousePosition.y,
+    screen.x,
+    screen.y,
+    state.use
+  ]);
+  
   return (
-    <div className={styles.hand}>
+    <>
+      {
+        usedCard !== null
+          ? (
+            <div
+              id={usedCard.id}
+              className={classnames(styles.card, styles.use)}
+
+              style={{
+                transform: `
+                  translate(${usedCard.left}px, ${usedCard.top}px)
+                  scale(${usedCard.scale})
+                  rotateZ(${usedCard.rotation}deg)
+                `,
+                transition: usedCard.transition,
+                zIndex: usedCard.zIndex,
+              }}
+            />
+          )
+          : null
+      }
       {
         newCards.map((card, i) => {
-          if (i === state.selectedIndex) {
-            // Handle the mouseMove event only on the selected card
-            mouseMove = (e) => {
-              setState({
-                ...state,
-                mousePosition: {
-                  x: e.clientX,
-                  y: e.clientY
-                }
-              })
-            }
-
-            card.left = state.mousePosition.x - cardWidth / 1.4;
-            card.top = state.mousePosition.y - cardHeight;
-          }
-          // Set mouseMove to a noop if it's not the selected card
-          else {
-            mouseMove = () => {};
-          }
-
-          const style = {
-            transform: `
-              translate(${card.left}px, ${card.top}px)
-              scale(${card.scale})
-              rotateZ(${card.rotation}deg)
-            `,
-            transition: card.transition,
-            zIndex: card.zIndex,
-          };
-
           return (
             <div
-              className={styles.card}
               id={card.id}
               key={card.id} 
-              style={style}
+              className={styles.card}
+
+              style={{
+                transform: `
+                  translate(${card.left}px, ${card.top}px)
+                  scale(${card.scale})
+                  rotateZ(${card.rotation}deg)
+                `,
+                transition: card.transition,
+                zIndex: card.zIndex,
+              }}
 
               onMouseOver={() => setState({ ...state, hoverIndex: i })}
               onMouseOut={() => setState({ ...state, hoverIndex: -1, selectedIndex: -1 })}
-              onMouseMove={mouseMove}
-              
               onMouseDown={(e) => handleClick(e, i, state, setState)}
             />
           );
         })
       }
-    </div>
+    </>
   )
 }
